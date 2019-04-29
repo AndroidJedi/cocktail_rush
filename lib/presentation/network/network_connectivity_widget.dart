@@ -45,9 +45,10 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget>
 
   @override
   void dispose() {
+    super.dispose();
     subscription.cancel();
     controller.dispose();
-    super.dispose();
+
   }
 
   @override

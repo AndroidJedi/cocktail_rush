@@ -1,10 +1,8 @@
 import 'package:cocktail_rush/lockalization/CrLocalization.dart';
 import 'package:cocktail_rush/middleware/store_cocktails_middleware.dart';
 import 'package:cocktail_rush/model/app_state.dart';
-import 'package:cocktail_rush/model/generic.dart';
 import 'package:cocktail_rush/presentation/main_page.dart';
 import 'package:cocktail_rush/presentation/network/network_connectivity_widget.dart';
-import 'package:cocktail_rush/presentation/widgets/snack_notifier_widget.dart';
 import 'package:cocktail_rush/reducers/app_reducers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
