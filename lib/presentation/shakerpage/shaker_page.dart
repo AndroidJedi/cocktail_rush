@@ -11,7 +11,7 @@ import 'package:sensors/sensors.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:vibrate/vibrate.dart';
+import 'package:vibration/vibration.dart';
 
 class ShakerPage extends StatelessWidget {
   final bool foreground;
@@ -24,25 +24,26 @@ class ShakerPage extends StatelessWidget {
         converter: (store) => _ViewModel.fromStore(store.state),
         builder: (context, vm) {
           return Column(children: [
-            Flexible(child: AnimatedShaker(
-                foreground: foreground,
-                onAnimationFinished: () {
-                  Navigator.of(context).push(MaterialPageRoute<ShakerPage>(
-                    builder: (_) =>
-                        CocktailDetailPage(
-                          cocktail: vm.randomCocktail,
-                          hero: false,
-                        ),
-                  ));
-                }), flex: 7),
-            Flexible(child: Text(
-                CrLocalization.of(context).shakePageHint,
-                style: new TextStyle(
-                  color: const Color(0x88444444),
-                  fontSize: 24.0,
-                  fontFamily: 'mermaid',
-                )
-            ), flex: 2)
+            Flexible(
+                child: AnimatedShaker(
+                    foreground: foreground,
+                    onAnimationFinished: () {
+                      Navigator.of(context).push(MaterialPageRoute<ShakerPage>(
+                        builder: (_) => CocktailDetailPage(
+                              cocktail: vm.randomCocktail,
+                              hero: false,
+                            ),
+                      ));
+                    }),
+                flex: 7),
+            Flexible(
+                child: Text(CrLocalization.of(context).shakePageHint,
+                    style: new TextStyle(
+                      color: const Color(0x88444444),
+                      fontSize: 24.0,
+                      fontFamily: 'mermaid',
+                    )),
+                flex: 2)
           ]);
         });
   }
@@ -80,7 +81,7 @@ class AnimatedShakerState extends State<AnimatedShaker>
   double currentTransition = 0;
   int repeatCount = 0;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
-  <StreamSubscription<dynamic>>[];
+      <StreamSubscription<dynamic>>[];
 
   AudioPlayer audioPlayer = new AudioPlayer();
 
@@ -97,28 +98,18 @@ class AnimatedShakerState extends State<AnimatedShaker>
     await audioPlayer.play(file.path, isLocal: true);
   }
 
-  final Iterable<Duration> _pauses = [
-    const Duration(milliseconds: 150),
-    const Duration(milliseconds: 250),
-    const Duration(milliseconds: 150),
-  ];
-
   @override
   void initState() {
     _navigatorObserver = ShakerNavigatorObserver(
         onCocktailSelected: _cancelAccelerometerAndSoundSubscriptions,
         onShakerPopped: _initAllSubscriptions);
 
-    Navigator
-        .of(context)
-        .widget
-        .observers
-        .add(_navigatorObserver);
+    Navigator.of(context).widget.observers.add(_navigatorObserver);
 
     _animationController = new AnimationController(
         duration: const Duration(milliseconds: 300), vsync: this);
     final Animation transition =
-    CurvedAnimation(parent: _animationController, curve: ShakeCurve());
+        CurvedAnimation(parent: _animationController, curve: ShakeCurve());
     transition
       ..addListener(() {
         setState(() {
@@ -149,27 +140,28 @@ class AnimatedShakerState extends State<AnimatedShaker>
     if (_streamSubscriptions.isNotEmpty) {
       return;
     }
-    _streamSubscriptions..add(
-        accelerometerEvents.listen((AccelerometerEvent event) {
-          final x = event.x;
-          final y = event.y;
-          final z = event.z;
+    _streamSubscriptions
+      ..add(accelerometerEvents.listen((AccelerometerEvent event) {
+        final x = event.x;
+        final y = event.y;
+        final z = event.z;
 
-          final accelerationSquareRoot = (x * x + y * y + z * z) / (9.8 * 9.8);
-          if (accelerationSquareRoot >= 1.3 &&
-              !_animationController.isAnimating) {
-            playLocal("shaker_sound.mp3");
-            Vibrate.vibrateWithPauses(_pauses);
-
-            _animationController.forward();
-          }
-        }))..add(audioPlayer.onPlayerStateChanged.listen((state) {
-      if (state == AudioPlayerState.COMPLETED) {
-        if (_animationController.isAnimating) {
+        final accelerationSquareRoot = (x * x + y * y + z * z) / (9.8 * 9.8);
+        if (accelerationSquareRoot >= 1.3 &&
+            !_animationController.isAnimating) {
           playLocal("shaker_sound.mp3");
+          Vibration.vibrate(duration:900, pattern: [0, 150, 15, 250, 15, 150, 15, 250, 15, 150, 15, 250, 15, 150, 15, 250, 15, 150]);
+
+          _animationController.forward();
         }
-      }
-    }));
+      }))
+      ..add(audioPlayer.onPlayerStateChanged.listen((state) {
+        if (state == AudioPlayerState.COMPLETED) {
+          if (_animationController.isAnimating) {
+            playLocal("shaker_sound.mp3");
+          }
+        }
+      }));
   }
 
   void _cancelAccelerometerAndSoundSubscriptions() {
@@ -183,11 +175,8 @@ class AnimatedShakerState extends State<AnimatedShaker>
   void dispose() {
     _cancelAccelerometerAndSoundSubscriptions();
     _animationController.dispose();
-    Navigator
-        .of(context)
-        .widget
-        .observers
-        .remove(_navigatorObserver);
+    Vibration.cancel();
+    Navigator.of(context).widget.observers.remove(_navigatorObserver);
     super.dispose();
   }
 

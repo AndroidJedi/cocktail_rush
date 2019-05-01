@@ -23,17 +23,16 @@ dev_dependencies:
   redux: ^3.0.0
   redux_epics: ^0.10.2
   cached_network_image: ^0.4.1
-  firebase_database: ^1.0.4
-  firebase_storage: ^1.0.4
+  firebase_database: ^2.0.3
+  firebase_storage: 2.1.1+1
   flutter_redux: '0.5.0'
   sqflite: any
   path_provider: any
-  flutter_stetho: 0.2.1
   connectivity: 0.4.3+1
-  sensors: 0.4.0
+  sensors: ^0.4.0
   sprintf:
   audioplayer:
-  vibrate: 0.0.4
+  vibration: ^1.0.2
 
 
 
