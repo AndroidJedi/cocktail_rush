@@ -45,7 +45,7 @@ class CRApp extends StatelessWidget {
                   color: Colors.white),
             ),
           ),
-          home: NetworkConnectivityWidget(child: MainPage()),
+          home:  MainPage(),
           localizationsDelegates: [
             CrLocalizationsDelegate(store),
             GlobalMaterialLocalizations.delegate,
