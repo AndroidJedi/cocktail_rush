@@ -89,7 +89,7 @@ class FirebaseCacheManager {
         }
 
         //  log = "$log\Cache file valid till ${_cacheData[url].validTill?.toIso8601String() ?? "only once.. :("}";
-       return;
+        return;
       }
 
 //        log = "$log\nDownloading for first time.";

@@ -47,7 +47,8 @@ class FireStoredImage extends StatefulWidget {
         height = size,
         placeholder = Icon(Icons.image, size: size, color: Colors.pink[50]),
         errorWidget = Icon(Icons.error, size: size, color: Colors.pink[50]),
-        imageProvider = FireBaseImageProvider(FireBaseUrl(nodes: List<String>()..add("cocktails")..add("big"), image: image)),
+        imageProvider = FireBaseImageProvider(FireBaseUrl(
+            nodes: List<String>()..add("cocktails")..add("big"), image: image)),
         fadeOutDuration = const Duration(milliseconds: 300),
         fadeOutCurve = Curves.easeOut,
         fadeInDuration = const Duration(milliseconds: 700),
@@ -63,6 +64,7 @@ class _FireStoredImageState extends State<FireStoredImage>
     with TickerProviderStateMixin {
   ImageStream _imageStream;
   ImageInfo _imageInfo;
+  ImageStreamListener _updateImageListener;
 
   @override
   void didChangeDependencies() {
@@ -93,21 +95,11 @@ class _FireStoredImageState extends State<FireStoredImage>
       // If the keys are the same, then we got the same image back, and so we don't
       // need to update the listeners. If the key changed, though, we must make sure
       // to switch our listeners to the new image stream.
-      oldImageStream?.removeListener(_updateImage);
-      _imageStream.addListener(_updateImage, onError: (exception, stackTrace) {
-        _imageLoadingFailed();
-      });
+      oldImageStream?.removeListener(_updateImageListener);
+      _imageStream.addListener(_updateImageListener);
     }
 
     if (_phase == Phase.start) _updatePhase();
-  }
-
-  void _updateImage(ImageInfo imageInfo, bool synchronousCall) {
-    setState(() {
-      // Trigger a build whenever the image changes.
-      _imageInfo = imageInfo;
-      _updatePhase();
-    });
   }
 
   void _imageLoadingFailed() {
@@ -183,13 +175,21 @@ class _FireStoredImageState extends State<FireStoredImage>
   @override
   void dispose() {
     _controller.dispose();
-    _imageStream.removeListener(_updateImage);
+    _imageStream.removeListener(_updateImageListener);
     super.dispose();
   }
 
   @override
   void initState() {
     _hasError = false;
+    _updateImageListener = ImageStreamListener((imageInfo, synchronousCall) {
+      setState(() {
+        _imageInfo = imageInfo;
+        _updatePhase();
+      });
+    }, onError: (exception, stackTrace) {
+      _imageLoadingFailed();
+    });
     _controller = new AnimationController(
       value: 1.0,
       vsync: this,

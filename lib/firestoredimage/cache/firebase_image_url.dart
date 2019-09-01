@@ -16,6 +16,4 @@ class FireBaseUrl {
 
   @override
   String toString() => image;
-
-
 }

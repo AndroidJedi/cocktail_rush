@@ -33,37 +33,36 @@ class FireBaseImageProvider extends ImageProvider<FireBaseImageProvider> {
     return new MultiFrameImageStreamCompleter(
         codec: _loadAsync(key),
         scale: key.scale,
-        informationCollector: (StringBuffer information) {
-          information.writeln('Image provider: $this');
-          information.write('Image key: $key');
-        });
+        informationCollector: () => List<DiagnosticsNode>());
   }
 
-  static Map <ImageConfigurationKey, ImageInfo>_imageInfoCache = HashMap<ImageConfigurationKey, ImageInfo>();
-
+  static Map<ImageConfigurationKey, ImageInfo> _imageInfoCache =
+      HashMap<ImageConfigurationKey, ImageInfo>();
 
   @override
   ImageStream resolve(ImageConfiguration configuration) {
-
-    if(_imageInfoCache.containsKey(ImageConfigurationKey(configuration, url.image))){
-      ImageInfo imageInfo = _imageInfoCache[ImageConfigurationKey(configuration, url.image)];
+    if (_imageInfoCache
+        .containsKey(ImageConfigurationKey(configuration, url.image))) {
+      ImageInfo imageInfo =
+          _imageInfoCache[ImageConfigurationKey(configuration, url.image)];
       final ImageStream stream = ImageStream();
-      ImageStreamCompleter imageStreamCompleter =  new OneFrameImageStreamCompleter(SynchronousFuture<ImageInfo>(imageInfo));
-      stream.setCompleter(PaintingBinding.instance.imageCache.putIfAbsent(obtainKey(configuration), () => imageStreamCompleter ));
+      ImageStreamCompleter imageStreamCompleter =
+          new OneFrameImageStreamCompleter(
+              SynchronousFuture<ImageInfo>(imageInfo));
+      stream.setCompleter(PaintingBinding.instance.imageCache
+          .putIfAbsent(obtainKey(configuration), () => imageStreamCompleter));
       return stream;
     }
 
-
     ImageStream imageStream = super.resolve(configuration);
 
-    imageStream.addListener((imageInfo, syncCall)=>
-        _imageInfoCache.putIfAbsent(ImageConfigurationKey(configuration, url.image), ()=>imageInfo )
-    );
-
+    imageStream.addListener(ImageStreamListener((imageInfo, syncCall) {
+      return _imageInfoCache.putIfAbsent(
+          ImageConfigurationKey(configuration, url.image), () => imageInfo);
+    }));
 
     return imageStream;
   }
-
 
   ///
   ///
@@ -88,8 +87,8 @@ class FireBaseImageProvider extends ImageProvider<FireBaseImageProvider> {
   ///
   ///
 
-  Future<ui.Codec> _loadAsyncFromFile(
-      FireBaseImageProvider key, File file, FirebaseCacheManager cacheManager) async {
+  Future<ui.Codec> _loadAsyncFromFile(FireBaseImageProvider key, File file,
+      FirebaseCacheManager cacheManager) async {
     assert(key == this);
 
     final Uint8List bytes = await file.readAsBytes();
@@ -115,28 +114,24 @@ class FireBaseImageProvider extends ImageProvider<FireBaseImageProvider> {
 
   @override
   String toString() => '$runtimeType("$url", scale: $scale)';
-
 }
 
-class ImageConfigurationKey{
-
+class ImageConfigurationKey {
   ImageConfiguration configuration;
   String image;
 
-  ImageConfigurationKey(this.configuration,this.image);
-
+  ImageConfigurationKey(this.configuration, this.image);
 
   @override
   bool operator ==(other) {
-
-    if(!(other is ImageConfigurationKey)){
+    if (!(other is ImageConfigurationKey)) {
       return false;
     }
     ImageConfigurationKey otherImageConfigurationKey = other;
-    return this.configuration == otherImageConfigurationKey.configuration && this.image == otherImageConfigurationKey.image ;
+    return this.configuration == otherImageConfigurationKey.configuration &&
+        this.image == otherImageConfigurationKey.image;
   }
 
   @override
-  int get hashCode =>  configuration.hashCode^image.hashCode;
-
+  int get hashCode => configuration.hashCode ^ image.hashCode;
 }
